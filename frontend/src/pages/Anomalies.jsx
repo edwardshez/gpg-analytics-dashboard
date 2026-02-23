@@ -4,7 +4,8 @@ import Loader from '../components/Loader'
 import DataTable from '../components/DataTable'
 
 
-export default function Anomalies() {
+export default function Anomalies({ theme }) {
+    const isLight = theme === 'light'
     const [data, setData] = useState(null)
     useEffect(() => { fetch('/api/anomalies').then(r => r.json()).then(setData) }, [])
     if (!data) return <Loader />
@@ -19,7 +20,7 @@ export default function Anomalies() {
                         Anomaly Detection
                         <span className="text-xs bg-gpg-accent/20 text-gpg-accent border border-gpg-accent/30 px-2 py-0.5 rounded-full">AI Powered</span>
                     </h1>
-                    <p className="text-gpg-text-secondary/40 text-sm mt-1">Cross-referencing transactions for suspicious patterns and AI scoring</p>
+                    <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-gpg-text-secondary/40'} text-sm mt-1`}>Cross-referencing transactions for suspicious patterns and AI scoring</p>
                 </div>
             </div>
 

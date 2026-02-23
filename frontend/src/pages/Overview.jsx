@@ -93,10 +93,10 @@ export default function Overview({ deptId, theme }) {
     return (
         <div className="space-y-8 animate-fade-in pb-10">
             <div>
-                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                <h1 className={`text-2xl font-bold ${isLight ? 'text-gpg-text-primary' : 'bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60'}`}>
                     {deptId ? 'Department Overview' : 'Financial Overview'}
                 </h1>
-                <p className="text-white/40 text-sm mt-1">
+                <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-white/40'} text-sm mt-1`}>
                     24-month expenditure analysis {deptId ? 'for selected department' : 'across all GPG departments'}
                 </p>
             </div>

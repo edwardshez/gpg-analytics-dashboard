@@ -6,7 +6,8 @@ import DataTable from '../components/DataTable'
 
 const fmt = (n) => n >= 1e6 ? `R${(n / 1e6).toFixed(1)}M` : `R${(n / 1e3).toFixed(0)}K`
 
-export default function Suppliers({ deptId }) {
+export default function Suppliers({ deptId, theme }) {
+    const isLight = theme === 'light'
     const [data, setData] = useState(null)
     useEffect(() => {
         const url = deptId ? `/api/suppliers?department_id=${deptId}` : '/api/suppliers'
@@ -24,10 +25,10 @@ export default function Suppliers({ deptId }) {
         <div className="space-y-8 animate-fade-in pb-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300">
+                    <h1 className={`text-2xl font-bold ${isLight ? 'text-gpg-text-primary' : 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-300'}`}>
                         Supplier Analytics
                     </h1>
-                    <p className="text-gpg-text-secondary/40 text-sm mt-1">Vendor performance, compliance, and B-BBEE monitoring</p>
+                    <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-gpg-text-secondary/40'} text-sm mt-1`}>Vendor performance, compliance, and B-BBEE monitoring</p>
                 </div>
             </div>
 

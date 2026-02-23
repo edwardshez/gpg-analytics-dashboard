@@ -31,10 +31,10 @@ export default function Maverick({ deptId, theme }) {
         <div className="space-y-6 animate-fade-in pb-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-amber-300">
+                    <h1 className={`text-2xl font-bold ${isLight ? 'text-gpg-text-primary' : 'bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-amber-300'}`}>
                         Maverick Spend Analysis
                     </h1>
-                    <p className="text-gpg-text-secondary/60 text-sm mt-1">Off-contract purchasing patterns & compliance</p>
+                    <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-gpg-text-secondary/60'} text-sm mt-1`}>Off-contract purchasing patterns & compliance</p>
                 </div>
 
                 <div className="flex items-center gap-4">

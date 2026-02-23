@@ -19,7 +19,7 @@ export default function KpiCard({
             className={`glass-card kpi-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 ${onClick ? 'cursor-pointer hover:shadow-lg hover:shadow-gpg-gold/5' : ''}`}
         >
             <div className="flex items-center justify-between mb-4 relative z-10">
-                <span className="text-xs font-semibold text-gpg-text-secondary/50 uppercase tracking-wider">{label}</span>
+                <span className="text-xs font-semibold text-gpg-text-secondary/80 uppercase tracking-wider">{label}</span>
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg transform group-hover:rotate-3 transition-transform`}>
                     <Icon size={18} className="text-white" />
                 </div>

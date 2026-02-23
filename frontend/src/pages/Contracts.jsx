@@ -44,10 +44,10 @@ export default function Contracts({ deptId, theme }) {
         <div className="space-y-6 animate-fade-in pb-10">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300">
+                    <h1 className={`text-2xl font-bold ${isLight ? 'text-gpg-text-primary' : 'bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-300'}`}>
                         Contracts Register
                     </h1>
-                    <p className="text-gpg-text-secondary/40 text-sm mt-1">Active contract performance, expiry management & utilisation</p>
+                    <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-gpg-text-secondary/40'} text-sm mt-1`}>Active contract performance, expiry management & utilisation</p>
                 </div>
 
                 {/* What-If Calculator Button */}
@@ -69,7 +69,7 @@ export default function Contracts({ deptId, theme }) {
                     <div className="bg-gpg-navy border border-gpg-border p-8 rounded-2xl w-[600px] shadow-2xl relative" onClick={e => e.stopPropagation()} role="document">
                         <button onClick={() => setShowWhatIf(false)} className="absolute top-4 right-4 text-gpg-text-secondary/30 hover:text-gpg-text-primary">✕</button>
                         <h3 className="text-xl font-bold mb-2 flex items-center gap-2 text-gpg-text-primary"><Calculator className="text-gpg-gold" /> Scenario Planner</h3>
-                        <p className="text-gpg-text-secondary/40 text-sm mb-6">Estimate savings by consolidating similar contracts.</p>
+                        <p className={`${isLight ? 'text-gpg-text-secondary' : 'text-gpg-text-secondary/40'} text-sm mb-6`}>Estimate savings by consolidating similar contracts.</p>
 
                         <div className="bg-gpg-surface rounded-lg p-4 mb-6 border border-gpg-border">
                             <h4 className="text-sm font-semibold mb-3 text-gpg-text-secondary/70">Selected Contracts (Simulation)</h4>
