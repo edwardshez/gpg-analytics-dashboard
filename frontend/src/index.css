@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+@theme {
+  /* Enterprise Palette: Deep Navy, Gold, and Crisp White */
+  --color-gpg-blue: var(--gpg-blue);
+  --color-gpg-navy: var(--gpg-navy);
+  --color-gpg-dark: var(--gpg-dark);
+  --color-gpg-gold: var(--gpg-gold);
+  --color-gpg-gold-light: var(--gpg-gold-light);
+  --color-gpg-accent: var(--gpg-accent);
+  --color-gpg-teal: var(--gpg-teal);
+  --color-gpg-red: var(--gpg-red);
+  --color-gpg-green: var(--gpg-green);
+  --color-gpg-purple: var(--gpg-purple);
+
+  /* Semantic Colors */
+  --color-gpg-surface: var(--gpg-surface);
+  --color-gpg-surface-hover: var(--gpg-surface-hover);
+  --color-gpg-border: var(--gpg-border);
+  --color-gpg-text-primary: var(--gpg-text-primary);
+  --color-gpg-text-secondary: var(--gpg-text-secondary);
+
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:root {
+  --gpg-blue: #0a1628;
+  --gpg-navy: #0f2040;
+  --gpg-dark: #050b14;
+  --gpg-gold: #c69c3a;
+  --gpg-gold-light: #e6c878;
+  --gpg-accent: #3b82f6;
+  --gpg-teal: #0d9488;
+  --gpg-red: #dc2626;
+  --gpg-green: #16a34a;
+  --gpg-purple: #7c3aed;
+  --gpg-surface: rgba(15, 32, 64, 0.4);
+  --gpg-surface-hover: rgba(15, 32, 64, 0.7);
+  --gpg-border: rgba(255, 255, 255, 0.08);
+  --gpg-text-primary: #f8fafc;
+  --gpg-text-secondary: #94a3b8;
+  --gpg-bg-glow: rgba(15, 32, 64, 0.4);
+  --gpg-bg-accent-glow: rgba(198, 156, 58, 0.03);
+}
+
+:root.light {
+  --gpg-blue: #f1f5f9;
+  --gpg-navy: #e2e8f0;
+  --gpg-dark: #f8fafc;
+  --gpg-gold: #a67c00;
+  --gpg-gold-light: #c69c3a;
+  --gpg-accent: #2563eb;
+  --gpg-teal: #0d9488;
+  --gpg-red: #be123c;
+  --gpg-green: #15803d;
+  --gpg-purple: #6d28d9;
+  --gpg-surface: rgba(255, 255, 255, 0.7);
+  --gpg-surface-hover: rgba(255, 255, 255, 0.95);
+  --gpg-border: rgba(0, 0, 0, 0.08);
+  --gpg-text-primary: #1e293b;
+  --gpg-text-secondary: #475569;
+  --gpg-bg-glow: rgba(59, 130, 246, 0.03);
+  --gpg-bg-accent-glow: rgba(198, 156, 58, 0.02);
+}
+
+@layer base {
+  body {
+    @apply bg-gpg-dark text-gpg-text-primary antialiased;
+    font-family: var(--font-sans);
+    background-image:
+      radial-gradient(circle at 50% 0%, var(--gpg-bg-glow) 0%, transparent 60%),
+      radial-gradient(circle at 100% 0%, var(--gpg-bg-accent-glow) 0%, transparent 40%);
+    background-attachment: fixed;
+  }
+}
+
+/* 
+ * Enterprise Components 
+ * "Big 4" Aesthetic: Clean lines, subtle depth, high contrast for data 
+ */
+
+/* Premium Glass Card */
+.glass-card {
+  background: var(--gpg-surface);
+  border: 1px solid var(--gpg-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 0.75rem;
+  /* 12px */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: var(--gpg-surface-hover);
+  border-color: var(--gpg-border);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* KPI Card specific styling handled in component, but base glow here */
+.kpi-card-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(198, 156, 58, 0.5), transparent);
+  opacity: 0.5;
+}
+
+/* Sidebar Navigation */
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 mx-2 rounded-lg text-sm font-medium transition-all duration-200;
+  color: var(--color-gpg-text-secondary);
+  border: 1px solid transparent;
+}
+
+.sidebar-link:hover {
+  color: var(--color-gpg-text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sidebar-link.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--gpg-gold) 0%, #b48a2d 100%);
+  border-color: rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(198, 156, 58, 0.3);
+}
+
+.dark .sidebar-link.active {
+  color: var(--color-gpg-gold-light);
+  background: rgba(198, 156, 58, 0.08);
+  border-color: rgba(198, 156, 58, 0.15);
+  box-shadow: 0 0 15px rgba(198, 156, 58, 0.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Utility Classes */
+.text-label {
+  @apply text-xs font-semibold uppercase tracking-wider text-gpg-text-secondary;
+}
+
+.text-value {
+  @apply font-bold text-gpg-text-primary;
+}
+
+/* Data Table Styles (Preparation for DataTable component) */
+.table-header {
+  @apply px-6 py-3 text-left text-xs font-medium text-gpg-text-secondary uppercase tracking-wider border-b border-gpg-border;
+}
+
+.table-cell {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gpg-text-primary border-b border-gpg-border/50;
+}
+
+.table-row {
+  @apply transition-colors hover:bg-white/5;
+}
