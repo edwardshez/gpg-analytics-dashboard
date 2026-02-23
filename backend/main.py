@@ -11,6 +11,25 @@ import numpy as np
 
 from anomaly_detection import detect_transaction_anomalies, detect_contract_anomalies, detect_invoice_anomalies
 
+# In cloud deployment, the DB might be missing because it's too large for Git.
+# Auto-generate a lightweight version if so.
+import sys
+import os
+def init_db():
+    try:
+        potential_db = next((p for p in potential_paths if p.exists()), None)
+        if not potential_db:
+            print("Database not found. Initiating cloud-scale data generation...")
+            # Add root to sys.path to find 'data' module
+            root_dir = Path(__file__).resolve().parent.parent
+            sys.path.append(str(root_dir))
+            from data.generate_data import generate_all_data
+            
+            # Use small transaction count for Render free tier (Fast & low RAM)
+            generate_all_data(db_path=potential_paths[0], transactions_n=30000, po_n=5000, supplier_n=500)
+    except Exception as e:
+        print(f"Warning: Database auto-initialization failed: {e}")
+
 app = FastAPI(title="GPG Analytics API", version="1.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
@@ -23,6 +42,7 @@ potential_paths = [
 ]
 
 DB_PATH = next((p for p in potential_paths if p.exists()), potential_paths[0])
+init_db()
 
 def get_db():
     conn = sqlite3.connect(str(DB_PATH))

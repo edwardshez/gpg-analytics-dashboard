@@ -306,22 +306,27 @@ def gen_personnel(conn, dept_data):
     return len(rows)
 
 # ─── Main ────────────────────────────────────────────────────────────────────
-def main():
-    DB_DIR.mkdir(parents=True, exist_ok=True)
-    if DB_PATH.exists(): os.remove(DB_PATH)
-    print(f"Database: {DB_PATH}\n")
-    conn = sqlite3.connect(str(DB_PATH))
+# ─── Main Generator Function ────────────────────────────────────────────────
+def generate_all_data(db_path=None, transactions_n=510000, po_n=82000, supplier_n=2100):
+    target_path = Path(db_path) if db_path else DB_PATH
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    if target_path.exists(): 
+        os.remove(target_path)
+        
+    print(f"Generating Database: {target_path}\n")
+    conn = sqlite3.connect(str(target_path))
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=OFF")
+    
     create_tables(conn)
-
     gen_departments(conn)
-    n_supp, hf = gen_suppliers(conn, 2100)
+    n_supp, hf = gen_suppliers(conn, supplier_n)
     dept_ids = [d[0] for d in DEPARTMENTS]
     n_con = gen_contracts(conn, n_supp, dept_ids, 320)
-    gen_transactions(conn, DEPARTMENTS, n_supp, hf, 510000)
-    gen_purchase_orders(conn, DEPARTMENTS, n_supp, n_con, 82000)
-    n_pers = gen_personnel(conn, DEPARTMENTS)
+    gen_transactions(conn, DEPARTMENTS, n_supp, hf, transactions_n)
+    gen_purchase_orders(conn, DEPARTMENTS, n_supp, n_con, po_n)
+    gen_personnel(conn, DEPARTMENTS)
 
     print("\n═══ Summary ═══")
     cur = conn.cursor()
@@ -329,7 +334,10 @@ def main():
         c = cur.execute(f'SELECT COUNT(*) FROM {t}').fetchone()[0]
         print(f"  {t:25s} {c:>10,}")
     conn.close()
-    print(f"\nDone! DB at {DB_PATH}")
+    print(f"\nDone! DB at {target_path}")
+
+def main():
+    generate_all_data()
 
 if __name__ == "__main__":
     main()
