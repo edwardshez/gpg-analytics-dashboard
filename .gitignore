@@ -59,6 +59,10 @@ brain/
 *.txt
 *.webp
 *.png
+!frontend/public/*.png
+!frontend/src/assets/*.png
+!frontend/src/assets/*.svg
+!frontend/public/*.svg
 eslint.config.js
 doctor_report*
 final_doctor_report*
