@@ -84,22 +84,20 @@ export default function Overview({ deptId, theme }) {
         ]
     }, [data, navigate])
 
-    if (loading || !data) return <Loader />
-
     const monthly_trend = data?.monthly_trend || []
     const department_spend = data?.department_spend || []
     const scoa_spend = data?.scoa_spend || []
 
-    // Separate actuals vs forecast
-    const actuals = monthly_trend.filter(m => !m.is_forecast)
-    const forecast = monthly_trend.filter(m => m.is_forecast)
+    const actuals = useMemo(() => monthly_trend.filter(m => !m.is_forecast), [monthly_trend])
+    const forecast = useMemo(() => monthly_trend.filter(m => m.is_forecast), [monthly_trend])
     const lastActual = actuals[actuals.length - 1]
 
-    // Slice history based on range, then append forecast
     const filteredTrend = useMemo(() => {
         const history = actuals.slice(-chartRange)
         return [...history, ...forecast]
     }, [actuals, forecast, chartRange])
+
+    if (loading || !data) return <Loader />
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
