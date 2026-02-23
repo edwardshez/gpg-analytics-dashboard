@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -12,13 +12,20 @@ export default function App() {
   })
   const [theme, setTheme] = useState(() => localStorage.getItem('gpg_theme') || 'dark')
 
-  useEffect(() => {
+  // Force direct DOM updates for instant feedback
+  useLayoutEffect(() => {
     const root = window.document.documentElement
     const body = window.document.body
+
+    // Force direct DOM updates for instant feedback
     root.classList.remove('light', 'dark')
     body.classList.remove('light', 'dark')
     root.classList.add(theme)
     body.classList.add(theme)
+
+    // Sync to attribute for extra CSS selectors robustness
+    root.setAttribute('data-theme', theme)
+
     localStorage.setItem('gpg_theme', theme)
   }, [theme])
 
@@ -48,7 +55,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
+    <BrowserRouter key={theme}>
       <Routes>
         <Route path="/login" element={token ? <Navigate to={getLandingPage()} replace /> : <Login onLogin={handleLogin} />} />
         <Route path="/*" element={token ? <Dashboard onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} user={user} /> : <Navigate to="/login" />} />
