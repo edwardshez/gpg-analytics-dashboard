@@ -1,0 +1,2 @@
+# Fallback for Render root builds
+-r backend/requirements.txt

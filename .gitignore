@@ -57,6 +57,8 @@ sqlite.db
 .gemini/
 brain/
 *.txt
+!requirements.txt
+!**/requirements.txt
 *.webp
 *.png
 !frontend/public/*.png
