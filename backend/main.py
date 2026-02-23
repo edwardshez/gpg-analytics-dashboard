@@ -8,6 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
+from pathlib import Path
+import sys
+import os
+
+# Ensure the backend directory is in sys.path for module discovery
+backend_dir = Path(__file__).resolve().parent
+if str(backend_dir) not in sys.path:
+    sys.path.append(str(backend_dir))
 
 from anomaly_detection import detect_transaction_anomalies, detect_contract_anomalies, detect_invoice_anomalies
 
