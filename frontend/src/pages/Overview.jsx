@@ -50,6 +50,11 @@ export default function Overview({ deptId, theme }) {
         return () => { ignore = true }
     }, [deptId])
 
+    // All useMemo hooks must be called unconditionally, before any early returns
+    const monthly_trend = data?.monthly_trend || []
+    const department_spend = data?.department_spend || []
+    const scoa_spend = data?.scoa_spend || []
+
     const kpiData = useMemo(() => {
         if (!data) return []
         return [
@@ -84,20 +89,18 @@ export default function Overview({ deptId, theme }) {
         ]
     }, [data, navigate])
 
-    const monthly_trend = data?.monthly_trend || []
-    const department_spend = data?.department_spend || []
-    const scoa_spend = data?.scoa_spend || []
-
     const actuals = useMemo(() => monthly_trend.filter(m => !m.is_forecast), [monthly_trend])
     const forecast = useMemo(() => monthly_trend.filter(m => m.is_forecast), [monthly_trend])
-    const lastActual = actuals[actuals.length - 1]
 
     const filteredTrend = useMemo(() => {
         const history = actuals.slice(-chartRange)
         return [...history, ...forecast]
     }, [actuals, forecast, chartRange])
 
+    // Early return comes AFTER all hooks
     if (loading || !data) return <Loader />
+
+    const lastActual = actuals[actuals.length - 1]
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
