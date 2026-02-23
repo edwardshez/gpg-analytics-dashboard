@@ -14,8 +14,11 @@ export default function App() {
 
   useEffect(() => {
     const root = window.document.documentElement
+    const body = window.document.body
     root.classList.remove('light', 'dark')
+    body.classList.remove('light', 'dark')
     root.classList.add(theme)
+    body.classList.add(theme)
     localStorage.setItem('gpg_theme', theme)
   }, [theme])
 

@@ -140,7 +140,7 @@ export default function Contracts({ deptId, theme }) {
                 {/* Utilisation gauge/donut chart */}
                 <div className="glass-card p-6">
                     <h3 className="text-lg font-semibold mb-2">Utilisation Distribution</h3>
-                    <ReactECharts option={{
+                    <ReactECharts key={theme} option={{
                         tooltip: { trigger: 'item' },
                         legend: { top: 'bottom', textStyle: { color: chartTextColor, fontSize: 10 }, itemWidth: 8, itemHeight: 8 },
                         series: [{

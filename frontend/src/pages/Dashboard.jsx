@@ -66,7 +66,7 @@ export default function Dashboard({ onLogout, theme, toggleTheme, user }) {
     const pageTitle = NAV.find(n => n.to === location.pathname)?.label || 'Dashboard'
 
     return (
-        <div className="flex h-screen overflow-hidden bg-gpg-dark text-gpg-text-primary font-sans">
+        <div className={`flex h-screen overflow-hidden bg-gpg-dark text-gpg-text-primary font-sans ${theme}`}>
             {/* Mobile Sidebar Overlay */}
             {isMobileMenuOpen && (
                 <div

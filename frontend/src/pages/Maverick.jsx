@@ -83,7 +83,7 @@ export default function Maverick({ deptId, theme }) {
                     </div>
 
                     <div className="flex-1 flex items-center justify-center -my-4">
-                        <ReactECharts option={{
+                        <ReactECharts key={theme} option={{
                             series: [{
                                 type: 'gauge',
                                 startAngle: 180, endAngle: 0,
@@ -113,7 +113,7 @@ export default function Maverick({ deptId, theme }) {
                 <div className="glass-card p-6 col-span-2">
                     <h3 className="text-lg font-semibold mb-1">Monthly Trend Analysis</h3>
                     <p className="text-gpg-text-secondary/40 text-xs mb-4">6-month trajectory showing {trendDown ? 'positive improvement' : 'mixed results'}</p>
-                    <ReactECharts option={{
+                    <ReactECharts key={theme} option={{
                         tooltip: { trigger: 'axis', backgroundColor: tooltipBg, borderColor: 'rgba(212,168,67,0.3)', textStyle: { color: tooltipText } },
                         xAxis: { type: 'category', data: monthly_trend.map(m => m.month), axisLabel: { color: chartTextColor }, axisLine: { lineStyle: { color: chartLineColor } } },
                         yAxis: [
@@ -137,7 +137,7 @@ export default function Maverick({ deptId, theme }) {
                 {/* Category Breakdown */}
                 <div className="glass-card p-6">
                     <h3 className="text-lg font-semibold mb-4">Top Maverick Categories</h3>
-                    <ReactECharts option={{
+                    <ReactECharts key={theme} option={{
                         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: tooltipBg, textStyle: { color: tooltipText } },
                         grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
                         xAxis: { type: 'value', axisLabel: { color: chartTextColor, formatter: v => fmt(v) }, splitLine: { lineStyle: { color: splitLineColor } } },

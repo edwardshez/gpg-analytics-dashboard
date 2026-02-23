@@ -120,7 +120,7 @@ export default function Overview({ deptId, theme }) {
                         <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 border border-dashed border-white/50"></span>AI Forecast</span>
                     </div>
                 </div>
-                <ReactECharts option={{
+                <ReactECharts key={theme} option={{
                     tooltip: {
                         trigger: 'axis',
                         backgroundColor: tooltipBg,
