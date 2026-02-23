@@ -11,6 +11,13 @@ import numpy as np
 
 from anomaly_detection import detect_transaction_anomalies, detect_contract_anomalies, detect_invoice_anomalies
 
+# Robust path resolution for database
+potential_paths = [
+    Path(__file__).resolve().parent.parent / "database" / "gpg_analytics.db", # Root mono-repo
+    Path(__file__).resolve().parent / "database" / "gpg_analytics.db",        # Nested in backend
+    Path("/opt/render/project/src/database/gpg_analytics.db"),              # Render absolute path
+]
+
 # In cloud deployment, the DB might be missing because it's too large for Git.
 # Auto-generate a lightweight version if so.
 import sys
@@ -19,27 +26,41 @@ def init_db():
     try:
         potential_db = next((p for p in potential_paths if p.exists()), None)
         if not potential_db:
-            print("Database not found. Initiating cloud-scale data generation...")
+            print("[DEBUG] Database not found. Initiating cloud-scale data generation...")
             # Add root to sys.path to find 'data' module
             root_dir = Path(__file__).resolve().parent.parent
-            sys.path.append(str(root_dir))
+            if str(root_dir) not in sys.path:
+                sys.path.append(str(root_dir))
+            
             from data.generate_data import generate_all_data
             
-            # Use small transaction count for Render free tier (Fast & low RAM)
-            generate_all_data(db_path=potential_paths[0], transactions_n=30000, po_n=5000, supplier_n=500)
+            # Use small transaction count for Render free tier (Ultra-Fast & low RAM)
+            generate_all_data(db_path=potential_paths[0], transactions_n=5000, po_n=1000, supplier_n=100)
+            print("[DEBUG] Database generated successfully.")
+        else:
+            print(f"[DEBUG] Database found at: {potential_db}")
     except Exception as e:
-        print(f"Warning: Database auto-initialization failed: {e}")
+        print(f"[DEBUG] FATAL: Database auto-initialization failed: {e}")
 
-app = FastAPI(title="GPG Analytics API", version="1.1.0")
+app = FastAPI(title="GPG Analytics API", version="1.1.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
-# Robust path resolution for database
-potential_paths = [
-    Path(__file__).resolve().parent.parent / "database" / "gpg_analytics.db", # Root mono-repo
-    Path(__file__).resolve().parent / "database" / "gpg_analytics.db",        # Nested in backend
-    Path("/opt/render/project/src/database/gpg_analytics.db"),              # Render absolute path
-]
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "db_path": str(DB_PATH), "db_exists": DB_PATH.exists()}
+
+@app.get("/api/debug-db")
+def debug_db():
+    exists = DB_PATH.exists()
+    size = DB_PATH.stat().st_size if exists else 0
+    return {
+        "exists": exists,
+        "size_mb": round(size / (1024*1024), 2),
+        "path": str(DB_PATH),
+        "potential_paths": [str(p) for p in potential_paths],
+        "cwd": os.getcwd()
+    }
 
 DB_PATH = next((p for p in potential_paths if p.exists()), potential_paths[0])
 init_db()
