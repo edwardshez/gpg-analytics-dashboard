@@ -34,6 +34,7 @@ export default function Overview({ deptId, theme }) {
     const navigate = useNavigate()
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [chartRange, setChartRange] = useState(12) // Default to 12 months
 
     useEffect(() => {
         let ignore = false
@@ -87,8 +88,15 @@ export default function Overview({ deptId, theme }) {
 
     const { monthly_trend, department_spend, scoa_spend } = data
 
-    // Separate actuals vs forecast for chart
+    // Separate actuals vs forecast
     const actuals = monthly_trend.filter(m => !m.is_forecast)
+    const forecast = monthly_trend.filter(m => m.is_forecast)
+
+    // Slice history based on range, then append forecast
+    const filteredTrend = useMemo(() => {
+        const history = actuals.slice(-chartRange)
+        return [...history, ...forecast]
+    }, [actuals, forecast, chartRange])
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
@@ -115,9 +123,22 @@ export default function Overview({ deptId, theme }) {
                         <TrendingUp size={18} className="text-gpg-gold" />
                         Expenditure Trend & Forecast
                     </h3>
-                    <div className="flex items-center gap-6 text-xs font-medium">
-                        <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></span>Actuals</span>
-                        <span className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-cyan-400 border border-dashed border-white/50"></span>AI Forecast</span>
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center bg-gpg-blue/30 border border-gpg-border rounded-lg p-0.5 shadow-inner">
+                            {[6, 12, 24].map(r => (
+                                <button
+                                    key={r}
+                                    onClick={() => setChartRange(r)}
+                                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all ${chartRange === r ? 'bg-gpg-gold text-gpg-navy shadow-md' : 'text-gpg-text-secondary hover:text-gpg-text-primary'}`}
+                                >
+                                    {r}M
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-4 text-[10px] font-medium opacity-70">
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span>Actuals</span>
+                            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-400 border border-dashed border-white/30"></span>AI Forecast</span>
+                        </div>
                     </div>
                 </div>
                 <ReactECharts key={theme} option={{
@@ -131,7 +152,7 @@ export default function Overview({ deptId, theme }) {
                     grid: { left: '3%', right: '4%', bottom: '3%', top: '5%', containLabel: true },
                     xAxis: {
                         type: 'category',
-                        data: monthly_trend.map(m => m.month),
+                        data: filteredTrend.map(m => m.month),
                         axisLabel: { color: chartTextColor, margin: 15 },
                         axisLine: { lineStyle: { color: chartLineColor } },
                         axisTick: { show: false },
@@ -146,7 +167,7 @@ export default function Overview({ deptId, theme }) {
                         {
                             name: 'Actual Spend',
                             type: 'line',
-                            data: monthly_trend.map(m => m.is_forecast ? null : m.total),
+                            data: filteredTrend.map(m => m.is_forecast ? null : m.total),
                             smooth: true,
                             symbol: 'circle',
                             symbolSize: 6,
@@ -165,7 +186,7 @@ export default function Overview({ deptId, theme }) {
                         {
                             name: 'Forecast',
                             type: 'line',
-                            data: monthly_trend.map(m => m.is_forecast ? m.total : (m.month === actuals[actuals.length - 1].month ? m.total : null)),
+                            data: filteredTrend.map(m => m.is_forecast ? m.total : (m.month === actuals[actuals.length - 1].month ? m.total : null)),
                             smooth: true,
                             symbol: 'none',
                             lineStyle: { color: '#22d3ee', width: 3, type: 'dashed' },
