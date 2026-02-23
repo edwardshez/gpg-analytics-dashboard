@@ -13,7 +13,9 @@ import {
     ChevronDown,
     Menu,
     Sun,
-    Moon
+    Moon,
+    Info,
+    CheckCircle
 } from 'lucide-react'
 import Overview from './Overview'
 import Maverick from './Maverick'
@@ -38,6 +40,14 @@ export default function Dashboard({ onLogout, theme, toggleTheme, user }) {
     const [searchResults, setSearchResults] = useState([])
     const [showResults, setShowResults] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const [showNotifications, setShowNotifications] = useState(false)
+
+    const notifications = [
+        { id: 1, type: 'anomaly', title: 'High-Risk Payment Flagged', desc: 'Potential duplicate detected in Dept of Health (R850k)', time: '12m ago', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10' },
+        { id: 2, type: 'contract', title: 'Contract Expiry Warning', desc: 'Infrastructure supply contract (GP-712) expires in 14 days.', time: '2h ago', icon: Info, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+        { id: 3, type: 'budget', title: 'Budget Variance Alert', desc: 'Education Dept spend exceeds variance threshold by 4.2%.', time: '5h ago', icon: TrendingDown, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+        { id: 4, type: 'system', title: 'Compliance Report Ready', desc: 'Quarterly audit for Q3 2025 is now available to download.', time: '1d ago', icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-500/10' },
+    ]
 
     useEffect(() => {
         fetch('/api/departments').then(r => r.json()).then(setDepartments)
@@ -188,10 +198,48 @@ export default function Dashboard({ onLogout, theme, toggleTheme, user }) {
                             >
                                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                             </button>
-                            <button className="relative p-2 text-gpg-text-secondary hover:text-gpg-text-primary hover:bg-gpg-surface rounded-lg transition-colors">
-                                <Bell size={18} />
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-gpg-red rounded-full border-2 border-gpg-navy"></span>
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowNotifications(!showNotifications)}
+                                    className={`relative p-2 rounded-lg transition-colors ${showNotifications ? 'bg-gpg-gold/10 text-gpg-gold' : 'text-gpg-text-secondary hover:text-gpg-text-primary hover:bg-gpg-surface'}`}
+                                >
+                                    <Bell size={18} />
+                                    <span className="absolute top-2 right-2 w-2 h-2 bg-gpg-red rounded-full border-2 border-gpg-navy"></span>
+                                </button>
+
+                                {showNotifications && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
+                                        <div className="absolute right-0 mt-3 w-80 md:w-96 glass-card overflow-hidden z-50 animate-fade-in shadow-2xl mr-[-50px] md:mr-0">
+                                            <div className="px-4 py-3 border-b border-gpg-border bg-white/5 flex items-center justify-between">
+                                                <h3 className="font-bold text-sm text-gpg-text-primary">Intelligence Alerts</h3>
+                                                <button className="text-[10px] text-gpg-gold font-bold hover:underline">Mark all read</button>
+                                            </div>
+                                            <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                                                {notifications.map(n => (
+                                                    <div key={n.id} className="p-4 border-b border-gpg-border last:border-0 hover:bg-white/5 transition-colors cursor-pointer group">
+                                                        <div className="flex gap-3">
+                                                            <div className={`p-2 rounded-lg ${n.bg} shrink-0`}>
+                                                                <n.icon size={16} className={n.color} />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <div className="flex justify-between items-start mb-0.5">
+                                                                    <p className="text-xs font-bold text-gpg-text-primary group-hover:text-gpg-gold transition-colors">{n.title}</p>
+                                                                    <span className="text-[10px] text-gpg-text-secondary/40">{n.time}</span>
+                                                                </div>
+                                                                <p className="text-[11px] text-gpg-text-secondary/60 leading-relaxed">{n.desc}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button className="w-full py-2.5 text-xs font-bold text-gpg-text-secondary/60 hover:text-gpg-text-primary hover:bg-white/5 transition-colors border-t border-gpg-border">
+                                                View All Intelligence
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                             <button onClick={onLogout} className="p-2 text-gpg-text-secondary hover:text-gpg-red hover:bg-gpg-red/10 rounded-lg transition-colors" title="Sign Out">
                                 <LogOut size={18} />
                             </button>

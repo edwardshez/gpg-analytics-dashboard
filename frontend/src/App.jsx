@@ -55,7 +55,7 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter key={theme}>
+    <BrowserRouter>
       <Routes>
         <Route path="/login" element={token ? <Navigate to={getLandingPage()} replace /> : <Login onLogin={handleLogin} />} />
         <Route path="/*" element={token ? <Dashboard onLogout={handleLogout} theme={theme} toggleTheme={toggleTheme} user={user} /> : <Navigate to="/login" />} />

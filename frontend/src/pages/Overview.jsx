@@ -185,6 +185,7 @@ export default function Overview({ deptId, theme }) {
                         </h3>
                         <div className="flex-1 min-h-0">
                             <ReactECharts
+                                key={theme}
                                 option={{
                                     tooltip: {
                                         formatter: p => `
@@ -236,6 +237,7 @@ export default function Overview({ deptId, theme }) {
                     </h3>
                     <div className="flex-1 min-h-0">
                         <ReactECharts
+                            key={theme}
                             option={{
                                 tooltip: {
                                     trigger: 'axis',
