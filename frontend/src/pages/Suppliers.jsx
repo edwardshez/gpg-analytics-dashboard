@@ -16,10 +16,19 @@ export default function Suppliers({ deptId, theme }) {
 
     if (!data) return <Loader />
 
-    const { top_suppliers, province_distribution } = data
-    // Compute stats from top suppliers list for the cards since the endpoint aggregates top 50
-    // Real app would have separate stats endpoint
+    const { top_suppliers, province_distribution, tax_compliance, bbbee_distribution } = data
     const topSpender = top_suppliers[0]
+
+    // Compute real tax compliance % from API data
+    const totalForTax = tax_compliance.reduce((s, t) => s + t.count, 0)
+    const compliantCount = tax_compliance.find(t => t.status === 'Compliant')?.count || 0
+    const taxCompliancePct = totalForTax > 0 ? Math.round((compliantCount / totalForTax) * 100) : 0
+
+    // Compute weighted average B-BBEE level from distribution
+    const totalSuppliers = bbbee_distribution.reduce((s, b) => s + b.count, 0)
+    const weightedLevel = totalSuppliers > 0
+        ? Math.round(bbbee_distribution.reduce((s, b) => s + (b.bbbee_level * b.count), 0) / totalSuppliers)
+        : 0
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
@@ -49,12 +58,12 @@ export default function Suppliers({ deptId, theme }) {
                     <div className="flex justify-between items-start mb-2">
                         <div>
                             <p className="text-xs text-gpg-text-secondary uppercase tracking-wider">Tax Compliant</p>
-                            <p className="text-lg font-bold text-gpg-text-primary">92%</p>
+                            <p className="text-lg font-bold text-gpg-text-primary">{taxCompliancePct}%</p>
                         </div>
                         <div className="p-2 bg-green-500/10 rounded-lg"><ShieldCheck size={18} className="text-green-400" /></div>
                     </div>
                     <div className="w-full bg-gpg-navy/10 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div className="bg-green-500 h-full rounded-full" style={{ width: '92%' }}></div>
+                        <div className="bg-green-500 h-full rounded-full" style={{ width: `${taxCompliancePct}%` }}></div>
                     </div>
                 </div>
 
@@ -73,11 +82,11 @@ export default function Suppliers({ deptId, theme }) {
                     <div className="flex justify-between items-start mb-2">
                         <div>
                             <p className="text-xs text-gpg-text-secondary uppercase tracking-wider">Avg B-BBEE</p>
-                            <p className="text-lg font-bold text-gpg-text-primary">Level 2</p>
+                            <p className="text-lg font-bold text-gpg-text-primary">Level {weightedLevel}</p>
                         </div>
                         <div className="p-2 bg-amber-500/10 rounded-lg"><Percent size={18} className="text-amber-400" /></div>
                     </div>
-                    <p className="text-sm text-gpg-text-secondary/40 mt-1">Weighted by spend</p>
+                    <p className="text-sm text-gpg-text-secondary/40 mt-1">Weighted by count</p>
                 </div>
             </div>
 

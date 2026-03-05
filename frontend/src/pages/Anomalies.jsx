@@ -7,7 +7,25 @@ import DataTable from '../components/DataTable'
 export default function Anomalies({ theme }) {
     const isLight = theme === 'light'
     const [data, setData] = useState(null)
-    useEffect(() => { fetch('/api/anomalies').then(r => r.json()).then(setData) }, [])
+    const [error, setError] = useState(null)
+
+    useEffect(() => {
+        fetch('/api/anomalies')
+            .then(r => {
+                if (!r.ok) throw new Error(`Server error: ${r.status}`)
+                return r.json()
+            })
+            .then(setData)
+            .catch(err => setError(err.message))
+    }, [])
+
+    if (error) return (
+        <div className="flex flex-col items-center justify-center h-64 gap-4 text-center animate-fade-in">
+            <AlertCircle size={40} className="text-red-400" />
+            <p className="text-gpg-text-primary font-semibold">Failed to load anomaly data</p>
+            <p className="text-gpg-text-secondary/60 text-sm">{error}</p>
+        </div>
+    )
     if (!data) return <Loader />
 
     const { supplier_anomalies, total_supplier_flags, invoice_anomalies, total_invoice_flags } = data

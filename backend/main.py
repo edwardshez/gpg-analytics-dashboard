@@ -1,16 +1,15 @@
 """GPG Analytics Dashboard - FastAPI Backend"""
 import sqlite3
+import sys
+import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime, timedelta
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pandas as pd
 import numpy as np
-from pathlib import Path
-import sys
-import os
 
 # Ensure the backend directory is in sys.path for module discovery
 backend_dir = Path(__file__).resolve().parent
@@ -28,8 +27,6 @@ potential_paths = [
 
 # In cloud deployment, the DB might be missing because it's too large for Git.
 # Auto-generate a lightweight version if so.
-import sys
-import os
 def init_db():
     try:
         potential_db = next((p for p in potential_paths if p.exists()), None)
@@ -79,10 +76,13 @@ def get_db():
     return conn
 
 def query_df(sql, params=None):
-    conn = sqlite3.connect(str(DB_PATH))
-    df = pd.read_sql(sql, conn, params=params)
-    conn.close()
-    return df
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        df = pd.read_sql(sql, conn, params=params)
+        conn.close()
+        return df
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database query failed: {str(e)}")
 
 # ─── Auth ────────────────────────────────────────────────────────────────────
 class LoginRequest(BaseModel):
@@ -170,6 +170,17 @@ def overview(department_id: Optional[int] = None):
         FROM transactions {where_clause} GROUP BY scoa_description ORDER BY total DESC
     """, params).to_dict('records')
 
+    # Top 20 supplier concentration (global only)
+    supplier_conc = []
+    if not department_id:
+        supplier_conc = query_df("""
+            SELECT s.id, s.supplier_name, SUM(t.amount) as total_spend, COUNT(t.id) as txn_count
+            FROM transactions t JOIN suppliers s ON t.supplier_id = s.id
+            GROUP BY s.id, s.supplier_name ORDER BY total_spend DESC LIMIT 20
+        """).to_dict('records')
+        for sc in supplier_conc:
+            sc['pct_of_total'] = round(sc['total_spend'] / total_spend * 100, 1) if total_spend else 0
+
     conn.close()
     return {
         "kpis": {
@@ -183,6 +194,7 @@ def overview(department_id: Optional[int] = None):
         "monthly_trend": monthly + forecast,
         "department_spend": dept_spend,
         "scoa_spend": scoa_spend,
+        "supplier_concentration": supplier_conc,
     }
 
 # ─── Maverick Spend ─────────────────────────────────────────────────────────
@@ -233,12 +245,33 @@ def maverick(department_id: Optional[int] = None):
         GROUP BY category ORDER BY value DESC LIMIT 10
     """, params).to_dict('records')
 
+    # Individual maverick POs with reason flags
+    pos_where = "WHERE po.contract_id IS NULL"
+    pos_params = []
+    if department_id:
+        pos_where += " AND po.department_id = ?"
+        pos_params.append(department_id)
+    maverick_pos = query_df(f"""
+        SELECT po.po_number, po.po_date, po.total_value,
+               s.supplier_name, d.name as department,
+               po.commodity_description as category,
+               CASE
+                   WHEN po.total_value > 500000 THEN 'Value exceeds threshold'
+                   ELSE 'No approved contract'
+               END as reason
+        FROM purchase_orders po
+        JOIN suppliers s ON po.supplier_id = s.id
+        JOIN departments d ON po.department_id = d.id
+        {pos_where} ORDER BY po.total_value DESC LIMIT 100
+    """, pos_params).to_dict('records')
+
     return {
         "overall_maverick_pct": float(overall['pct'] or 0),
         "total_maverick_value": float(overall['val'] or 0),
         "by_department": by_dept,
         "monthly_trend": monthly,
-        "by_category": by_category
+        "by_category": by_category,
+        "maverick_pos": maverick_pos
     }
 
 # ─── Suppliers ───────────────────────────────────────────────────────────────
@@ -325,17 +358,32 @@ def expiring_contracts():
     # Return contracts expiring in next 90 days
     today = datetime.now().strftime("%Y-%m-%d")
     future = (datetime.now() + timedelta(days=90)).strftime("%Y-%m-%d")
-    
-    expiring = query_df(f"""
+
+    expiring = query_df("""
         SELECT c.id, c.contract_number, c.description, s.supplier_name,
                c.end_date, c.contract_value,
                ROUND(c.spend_to_date * 100.0 / c.contract_value, 1) as utilisation_pct
         FROM contracts c
         JOIN suppliers s ON c.supplier_id = s.id
-        WHERE c.end_date BETWEEN '{today}' AND '{future}' AND c.status = 'Active'
+        WHERE c.end_date BETWEEN ? AND ? AND c.status = 'Active'
         ORDER BY c.end_date ASC
-    """).to_dict('records')
+    """, [today, future]).to_dict('records')
     return expiring
+
+# ─── Supplier Transactions (Drill-down) ─────────────────────────────────────
+@app.get("/api/suppliers/{supplier_id}/transactions")
+def supplier_transactions(supplier_id: int):
+    conn = get_db()
+    c = conn.cursor()
+    row = c.execute("SELECT supplier_name FROM suppliers WHERE id = ?", (supplier_id,)).fetchone()
+    conn.close()
+    name = row['supplier_name'] if row else 'Unknown'
+    txns = query_df("""
+        SELECT t.transaction_date, t.amount, d.name as department, t.scoa_description as category
+        FROM transactions t JOIN departments d ON t.department_id = d.id
+        WHERE t.supplier_id = ? ORDER BY t.transaction_date DESC LIMIT 50
+    """, [supplier_id]).to_dict('records')
+    return {"supplier_name": name, "transactions": txns}
 
 # ─── Search ──────────────────────────────────────────────────────────────────
 @app.get("/api/search")

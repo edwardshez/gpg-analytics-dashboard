@@ -16,9 +16,10 @@ export default function Contracts({ deptId, theme }) {
     const [expiring, setExpiring] = useState([])
     const [loading, setLoading] = useState(true)
     const [showWhatIf, setShowWhatIf] = useState(false)
+    const [utilisationFilter, setUtilisationFilter] = useState('all')
 
     useEffect(() => {
-        if (!loading) setLoading(true)
+        setLoading(true)
         const url_contracts = deptId ? `/api/contracts?department_id=${deptId}` : '/api/contracts'
         const url_expiring = '/api/contracts/expiring' // Assume global or filtered later if needed
 
@@ -39,6 +40,18 @@ export default function Contracts({ deptId, theme }) {
 
     const { contracts, utilisation_buckets } = data
     const overUtilised = contracts.filter(c => c.utilisation_pct > 100)
+    const underUtilised = contracts.filter(c => c.utilisation_pct < 30)
+
+    const filteredContracts = utilisationFilter === 'under'
+        ? contracts.filter(c => c.utilisation_pct < 30)
+        : utilisationFilter === 'over'
+            ? contracts.filter(c => c.utilisation_pct > 100)
+            : contracts
+
+    const tlDot = (pct) => {
+        const cls = pct > 100 ? 'bg-red-400' : pct < 30 ? 'bg-red-400' : pct < 70 ? 'bg-amber-400' : 'bg-green-400'
+        return <span className={`inline-block w-2 h-2 rounded-full ${cls} mr-2 flex-shrink-0`} />
+    }
 
     return (
         <div className="space-y-6 animate-fade-in pb-10">
@@ -182,9 +195,23 @@ export default function Contracts({ deptId, theme }) {
             </div>
 
             {/* Full Contract List */}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="text-xs text-gpg-text-secondary/60 mr-2">Filter:</span>
+                {[['all', 'All'], ['under', 'Underutilised (<30%)'], ['over', 'Overutilised (>100%)']].map(([val, label]) => (
+                    <button key={val} onClick={() => setUtilisationFilter(val)}
+                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all border ${utilisationFilter === val
+                                ? 'bg-gpg-gold text-gpg-navy border-gpg-gold shadow-sm'
+                                : 'bg-gpg-surface/30 text-gpg-text-secondary/60 border-gpg-border hover:border-gpg-gold/40'
+                            }`}>{label}
+                    </button>
+                ))}
+                {utilisationFilter !== 'all' && (
+                    <span className="text-xs text-gpg-text-secondary/40">{filteredContracts.length} contracts</span>
+                )}
+            </div>
             <DataTable
                 title="Active Contracts Register"
-                data={contracts}
+                data={filteredContracts}
                 columns={[
                     { key: 'contract_number', header: 'Contract No', sortable: true, render: r => <span className="font-mono text-gpg-text-secondary">{r.contract_number}</span> },
                     { key: 'description', header: 'Description', sortable: true, render: r => <span className="truncate block max-w-xs text-gpg-text-secondary" title={r.description}>{r.description}</span> },
@@ -192,13 +219,14 @@ export default function Contracts({ deptId, theme }) {
                     { key: 'contract_value', header: 'Value', sortable: true, align: 'right', render: r => <span className="text-gpg-text-primary">{fmt(r.contract_value)}</span> },
                     { key: 'spend_to_date', header: 'Spend', sortable: true, align: 'right', render: r => <span className="text-gpg-text-primary">{fmt(r.spend_to_date)}</span> },
                     {
-                        key: 'utilisation_pct', header: 'Progress', sortable: true, align: 'right', render: r => (
+                        key: 'utilisation_pct', header: 'Utilisation', sortable: true, align: 'right', render: r => (
                             <div className="flex items-center justify-end gap-2">
-                                <div className="w-24 bg-gpg-navy/10 h-1.5 rounded-full overflow-hidden">
-                                    <div className={`h-full rounded-full ${r.utilisation_pct > 100 ? 'bg-gpg-red' : r.utilisation_pct > 80 ? 'bg-amber-500' : 'bg-gpg-accent'}`}
+                                {tlDot(r.utilisation_pct)}
+                                <div className="w-20 bg-gpg-navy/10 h-1.5 rounded-full overflow-hidden">
+                                    <div className={`h-full rounded-full ${r.utilisation_pct > 100 ? 'bg-red-500' : r.utilisation_pct < 30 ? 'bg-red-400' : r.utilisation_pct > 80 ? 'bg-amber-500' : 'bg-green-500'}`}
                                         style={{ width: `${Math.min(r.utilisation_pct, 100)}%` }}></div>
                                 </div>
-                                <span className={`text-xs w-8 text-right font-mono ${r.utilisation_pct > 90 ? 'text-gpg-red font-bold' : 'text-gpg-text-secondary'}`}>{Math.round(r.utilisation_pct)}%</span>
+                                <span className={`text-xs w-8 text-right font-mono font-bold ${r.utilisation_pct > 100 ? 'text-red-400' : r.utilisation_pct < 30 ? 'text-red-400' : r.utilisation_pct > 80 ? 'text-amber-400' : 'text-green-400'}`}>{Math.round(r.utilisation_pct)}%</span>
                             </div>
                         )
                     }

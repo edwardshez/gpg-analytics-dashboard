@@ -8,8 +8,10 @@ export default function KpiCard({
     color,
     trend,
     trendLabel,
+    trafficLight,
     onClick
 }) {
+    const tlColor = trafficLight === 'green' ? 'bg-green-400' : trafficLight === 'amber' ? 'bg-amber-400' : trafficLight === 'red' ? 'bg-red-400' : null
     return (
         <div
             onClick={onClick}
@@ -19,7 +21,10 @@ export default function KpiCard({
             className={`glass-card kpi-card p-6 relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 ${onClick ? 'cursor-pointer hover:shadow-lg hover:shadow-gpg-gold/5' : ''}`}
         >
             <div className="flex items-center justify-between mb-4 relative z-10">
-                <span className="text-xs font-semibold text-gpg-text-secondary/80 uppercase tracking-wider">{label}</span>
+                <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gpg-text-secondary/80 uppercase tracking-wider">{label}</span>
+                    {tlColor && <span className={`w-2 h-2 rounded-full ${tlColor} shadow-sm`} title={`Status: ${trafficLight}`} />}
+                </div>
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center shadow-lg transform group-hover:rotate-3 transition-transform`}>
                     <Icon size={18} className="text-white" />
                 </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import ReactECharts from 'echarts-for-react'
-import { TrendingDown, ArrowDown, AlertTriangle, Settings } from 'lucide-react'
+import { TrendingDown, AlertTriangle, Settings, X } from 'lucide-react'
 import Loader from '../components/Loader'
 
 const fmt = (n) => n >= 1e9 ? `R${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `R${(n / 1e6).toFixed(1)}M` : `R${(n / 1e3).toFixed(0)}K`
@@ -15,6 +15,7 @@ export default function Maverick({ deptId, theme }) {
 
     const [data, setData] = useState(null)
     const [showConfig, setShowConfig] = useState(false)
+    const [selectedDept, setSelectedDept] = useState(null)
 
     useEffect(() => {
         const url = deptId ? `/api/maverick?department_id=${deptId}` : '/api/maverick'
@@ -22,6 +23,9 @@ export default function Maverick({ deptId, theme }) {
     }, [deptId])
 
     if (!data) return <Loader />
+
+    const fmt2 = (n) => n >= 1e6 ? `R${(n / 1e6).toFixed(1)}M` : `R${(n / 1e3).toFixed(0)}K`
+    const deptPOs = selectedDept ? (data.maverick_pos || []).filter(p => p.department === selectedDept) : []
 
     const { overall_maverick_pct, total_maverick_value, by_department, monthly_trend, by_category } = data
     const last6 = monthly_trend.slice(-6)
@@ -152,12 +156,13 @@ export default function Maverick({ deptId, theme }) {
                 {/* Top Offenders (Departments) */}
                 <div className="glass-card p-6 overflow-hidden">
                     <h3 className="text-lg font-semibold mb-4">Department Ranking</h3>
+                    <p className="text-xs text-gpg-text-secondary/40 mb-3">Click a department to see individual off-contract POs</p>
                     <div className="overflow-y-auto max-h-[280px]">
                         <table className="w-full text-sm">
                             <tbody className="divide-y divide-gpg-border">
                                 {by_department.map((d) => (
-                                    <tr key={d.department} className="hover:bg-gpg-surface transition-colors text-gpg-text-primary">
-                                        <td className="py-3 font-medium">{d.department.replace('Gauteng ', '')}</td>
+                                    <tr key={d.department} onClick={() => setSelectedDept(d.department)} className="hover:bg-gpg-surface transition-colors text-gpg-text-primary cursor-pointer group">
+                                        <td className="py-3 font-medium group-hover:text-gpg-gold transition-colors">{d.department.replace('Gauteng ', '')}</td>
                                         <td className="py-3 text-right">
                                             <div className="flex items-center justify-end gap-3">
                                                 <span className="text-gpg-text-secondary/60 text-xs">{fmt(d.maverick_value)}</span>
@@ -173,8 +178,55 @@ export default function Maverick({ deptId, theme }) {
                     </div>
                 </div>
             </div>
+
+            {/* Dept Drill-down Modal */}
+            {selectedDept && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in p-4" onClick={() => setSelectedDept(null)}>
+                    <div className="bg-gpg-navy border border-gpg-border rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-gpg-border flex items-start justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold text-gpg-text-primary">Off-Contract POs — {selectedDept.replace('Gauteng ', '')}</h3>
+                                <p className="text-sm text-gpg-text-secondary/60 mt-0.5">Individual purchase orders flagged as maverick spend</p>
+                            </div>
+                            <button onClick={() => setSelectedDept(null)} className="text-gpg-text-secondary/40 hover:text-gpg-text-primary transition-colors p-1"><X size={20} /></button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            {deptPOs.length === 0 ? (
+                                <div className="flex items-center justify-center h-32 text-gpg-text-secondary/50 text-sm">No maverick POs found for this department.</div>
+                            ) : (
+                                <table className="w-full text-sm">
+                                    <thead className="bg-gpg-surface/50 text-gpg-text-secondary text-xs uppercase tracking-wider sticky top-0">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left">PO Number</th>
+                                            <th className="px-4 py-3 text-left">Date</th>
+                                            <th className="px-4 py-3 text-left">Category</th>
+                                            <th className="px-4 py-3 text-left">Reason Flag</th>
+                                            <th className="px-4 py-3 text-right">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gpg-border/30">
+                                        {deptPOs.map((p, i) => (
+                                            <tr key={i} className="hover:bg-gpg-surface/30 transition-colors">
+                                                <td className="px-4 py-3 font-mono text-xs text-gpg-text-secondary/70">{p.po_number}</td>
+                                                <td className="px-4 py-3 text-gpg-text-secondary/60 text-xs">{p.po_date?.slice(0, 10)}</td>
+                                                <td className="px-4 py-3 text-gpg-text-primary text-xs">{p.category}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${p.reason === 'Value exceeds threshold' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>{p.reason}</span>
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-mono text-gpg-gold font-bold text-xs">{fmt2(p.total_value)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                        <div className="p-4 border-t border-gpg-border text-right">
+                            <p className="text-xs text-gpg-text-secondary/40">{deptPOs.length} maverick POs found</p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
-
 

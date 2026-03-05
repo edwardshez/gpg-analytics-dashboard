@@ -83,14 +83,24 @@ export default function DataTable({
             <div className="p-6 border-b border-gpg-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                     <h3 className="text-lg font-bold text-gpg-text-primary">{title}</h3>
-                    <button
-                        onClick={exportToCSV}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-gpg-surface hover:bg-gpg-surface-hover border border-gpg-border rounded-lg text-xs font-semibold text-gpg-text-secondary hover:text-gpg-text-primary transition-all group"
-                        title="Export filtered data to CSV"
-                    >
-                        <Download size={14} className="group-hover:translate-y-0.5 transition-transform" />
-                        Export CSV
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={exportToCSV}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gpg-surface hover:bg-gpg-surface-hover border border-gpg-border rounded-lg text-xs font-semibold text-gpg-text-secondary hover:text-gpg-text-primary transition-all group"
+                            title="Export filtered data to CSV"
+                        >
+                            <Download size={14} className="group-hover:text-gpg-gold transition-colors" />
+                            CSV
+                        </button>
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gpg-surface hover:bg-gpg-surface-hover border border-gpg-border rounded-lg text-xs font-semibold text-gpg-text-secondary hover:text-gpg-text-primary transition-all group"
+                            title="Export to PDF via browser print"
+                        >
+                            <Download size={14} className="group-hover:text-gpg-gold transition-colors" />
+                            PDF
+                        </button>
+                    </div>
                 </div>
 
                 {searchable && (
@@ -118,6 +128,7 @@ export default function DataTable({
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
+                                    aria-sort={sortConfig.key === col.key ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : undefined}
                                     className={`px-6 py-3 font-semibold ${col.sortable ? 'cursor-pointer hover:text-gpg-text-primary transition-colors select-none' : ''} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                                     onClick={() => col.sortable && requestSort(col.key)}
                                 >
@@ -158,30 +169,32 @@ export default function DataTable({
             </div>
 
             {/* Pagination */}
-            {pagination && totalPages > 1 && (
-                <div className="p-4 border-t border-gpg-border flex items-center justify-between text-xs text-gpg-text-secondary">
-                    <div>
-                        Showing <span className="font-bold text-gpg-text-primary">{(currentPage - 1) * rowsPerPage + 1}</span> to <span className="font-bold text-gpg-text-primary">{Math.min(currentPage * rowsPerPage, filteredData.length)}</span> of <span className="font-bold text-gpg-text-primary">{filteredData.length}</span> entries
+            {
+                pagination && totalPages > 1 && (
+                    <div className="p-4 border-t border-gpg-border flex items-center justify-between text-xs text-gpg-text-secondary">
+                        <div>
+                            Showing <span className="font-bold text-gpg-text-primary">{(currentPage - 1) * rowsPerPage + 1}</span> to <span className="font-bold text-gpg-text-primary">{Math.min(currentPage * rowsPerPage, filteredData.length)}</span> of <span className="font-bold text-gpg-text-primary">{filteredData.length}</span> entries
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-1 rounded hover:bg-gpg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <span className="text-gpg-text-primary font-medium px-2">Page {currentPage} of {totalPages}</span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-1 rounded hover:bg-gpg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="p-1 rounded hover:bg-gpg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                        >
-                            <ChevronLeft size={18} />
-                        </button>
-                        <span className="text-gpg-text-primary font-medium px-2">Page {currentPage} of {totalPages}</span>
-                        <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className="p-1 rounded hover:bg-gpg-surface disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                        >
-                            <ChevronRight size={18} />
-                        </button>
-                    </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }
