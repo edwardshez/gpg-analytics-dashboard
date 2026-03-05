@@ -143,13 +143,15 @@ def overview(department_id: Optional[int] = None):
     if len(monthly) > 12:
         last_month = monthly[-1]['month']
         # Simple moving average of last 3 months for projection base
-        avg_spend = np.mean([m['total'] for m in monthly[-3:]])
+        avg_spend = float(np.mean([m['total'] for m in monthly[-3:]]))
         last_date = datetime.strptime(last_month, "%Y-%m")
         
         for i in range(1, 7):
-            next_date = last_date + timedelta(days=i*30)
+            m = last_date.month - 1 + i
+            y = last_date.year + m // 12
+            m = m % 12 + 1
             forecast.append({
-                "month": next_date.strftime("%Y-%m"),
+                "month": f"{y}-{m:02d}",
                 "total": avg_spend * (1 + (i * 0.02)), # Slight inflation trend
                 "is_forecast": True
             })
