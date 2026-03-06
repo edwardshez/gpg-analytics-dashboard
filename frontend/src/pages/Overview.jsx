@@ -188,7 +188,7 @@ export default function Overview({ deptId, theme }) {
                     </h3>
                     <div className="flex-1 min-h-0">
                         <ReactECharts key={theme} option={{
-                            tooltip: { trigger: 'axis', backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: tooltipText }, axisPointer: { type: 'shadow' } },
+                            tooltip: { trigger: 'axis', backgroundColor: tooltipBg, borderColor: tooltipBorder, textStyle: { color: tooltipText }, axisPointer: { type: 'shadow' }, formatter: p => `<div class="font-bold mb-1">${p[0].name}</div><div class="text-sm">Spend: <span class="font-mono text-gpg-gold">R${p[0].value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>` },
                             grid: { left: '3%', right: '4%', bottom: '3%', top: '3%', containLabel: true },
                             xAxis: { type: 'value', axisLabel: { color: chartTextColor, formatter: v => fmt(v) }, splitLine: { lineStyle: { color: splitLineColor } } },
                             yAxis: { type: 'category', data: scoa_spend.slice(0, 10).reverse().map(s => s.category.length > 25 ? s.category.slice(0, 22) + '...' : s.category), axisLabel: { color: chartTextColor, fontSize: 11, width: 140, overflow: 'truncate' }, axisLine: { show: false }, axisTick: { show: false } },
