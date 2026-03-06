@@ -176,7 +176,7 @@ export default function Overview({ deptId, theme }) {
                         </h3>
                         <div className="flex-1 min-h-0">
                             <ReactECharts key={theme} option={{
-                                tooltip: { formatter: p => `<div class="font-bold mb-1">${p.name}</div><div class="text-sm">Spend: <span class="font-mono text-gpg-gold">${fmt(p.value)}</span></div>`, backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#fff' } },
+                                tooltip: { formatter: p => `<div class="font-bold mb-1">${p.name}</div><div class="text-sm">Spend: <span class="font-mono text-gpg-gold">R${p.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></div>`, backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(255,255,255,0.1)', textStyle: { color: '#fff' } },
                                 series: [{ type: 'treemap', data: department_spend.map(d => ({ name: d.department.replace('Gauteng ', ''), value: d.total_spend })), leafDepth: 1, roam: false, label: { show: true, color: '#fff', fontSize: 12, formatter: p => `${p.name}\n${fmt(p.value)}`, fontWeight: 'bold' }, itemStyle: { borderColor: '#0f172a', borderWidth: 2, gapWidth: 2 } }]
                             }} style={{ height: '100%', width: '100%' }} />
                         </div>
